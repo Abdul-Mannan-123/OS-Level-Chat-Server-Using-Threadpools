@@ -146,6 +146,3 @@ Hi Bazil
 - The client is terminal-based and reads/writes plain text over TCP.
 - Room files and the server log are stored in the project directory.
 
-## Submission Notes
-
-For submission, include the source files, Makefile, this README, and the project report.
