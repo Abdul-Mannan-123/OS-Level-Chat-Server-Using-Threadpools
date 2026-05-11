@@ -1,0 +1,106 @@
+MULTITHREADED CHAT SERVER PROJECT REPORT
+
+Objective
+
+The objective of this project is to design and implement a concurrent chat server in C that can serve multiple clients at the same time using a thread-pool architecture. The system should allow users to join chat rooms, exchange public and private messages, view room history, and disconnect cleanly without stopping the server for other users. A major goal of the project is to apply operating-systems concepts such as threading, synchronization, socket programming, and persistence to a real networked application.
+
+The project also aims to demonstrate how a server can remain responsive under concurrent load by separating connection acceptance from client processing. Instead of assigning one thread per client indefinitely, the implementation uses a fixed worker pool that pulls client sockets from a bounded queue. This approach keeps the server structure simple while still supporting parallel processing. Another objective is to preserve room messages across restarts so that the system behaves like a persistent chat environment rather than a temporary session-only service.
+
+Introduction
+
+This project implements a multithreaded socket-based chat application written in C. The server accepts TCP connections from multiple clients and routes communication based on chat rooms and user commands. A client can send normal text messages to a room, issue slash commands to change nickname or join a room, or send a direct private message to another user. The server keeps track of connected users, active rooms, and short message histories for each room.
+
+The core design uses a thread pool on the server side. A main acceptor thread listens for incoming connections on port 2000 and places accepted sockets into a shared queue. Worker threads remove sockets from that queue and handle the session logic for each client. This design allows the server to continue accepting new connections while already connected clients are being processed in parallel.
+
+The application is a good example of several OS-level programming ideas working together. Threading allows concurrency, mutexes and semaphores protect shared state, sockets provide network communication, and file-backed room logs provide persistence. Because all of these parts interact in one program, the project demonstrates the practical trade-offs that arise when building a real concurrent server.
+
+Background
+
+Chat systems are a classic example of concurrent network software. A server must accept many incoming connections, maintain state for each user, and ensure that messages are delivered to the correct audience. In a simple single-threaded design, the server can become blocked whenever it waits for data from one client. That would delay all other clients and make the system unusable under load. For that reason, concurrency is important in network server design.
+
+Thread pools are commonly used to manage concurrency efficiently. Rather than creating a new thread for every connection and letting it live for the lifetime of the session, the server creates a fixed number of worker threads in advance. New work is placed in a queue, and workers reuse themselves to process tasks one at a time. This reduces thread creation overhead and gives the developer more control over resource usage. In a classroom operating-systems project, this also provides a clear environment for studying synchronization and scheduling.
+
+The chat server also uses several standard data-structure ideas. A bounded queue is used for incoming sockets, linked lists are used to track rooms and clients, and a circular buffer stores room message history. These structures are appropriate because they are lightweight, easy to update concurrently with synchronization, and easy to reason about in C. Persistence is handled by appending messages to text files named after each room, allowing the server to reload history after a restart.
+
+Platform & Programming Languages
+
+The project was developed for a Linux environment and uses standard POSIX facilities. It is intended to be built and run from the command line using the provided Makefile. The main platform assumptions are TCP/IP networking, POSIX threads, and file I/O available on Unix-like systems. The server listens locally on port 2000, and clients connect through localhost or another reachable host address.
+
+The primary programming language is C. C is well suited to this project because it gives direct access to sockets, pointers, structures, threads, and low-level synchronization primitives. The codebase also uses standard C libraries for file handling and string manipulation. The client and server are compiled with a typical GCC-based toolchain through the Makefile.
+
+The project components include:
+
+- `server.c`: main server logic, thread pool, client routing, room management, logging, authentication, and rate limiting
+- `interactive_client.c`: terminal client used to connect to the server and send chat commands
+- `data_structs.c` and `data_structs.h`: queue and supporting data structures used by the server
+- `socket_utils.c` and `socket_utils.h`: helper functions for socket creation and configuration
+- `Makefile`: build script for compiling the project
+
+The program also relies on POSIX threads and synchronization primitives such as mutexes and semaphores. These are critical to the project because multiple workers may access the same clients list, room list, and message history at the same time.
+
+Methodology
+
+The development approach followed a layered server architecture. The first layer is network acceptance, where the main thread listens for incoming TCP connections. The second layer is task dispatch, where accepted sockets are placed into a bounded queue protected by synchronization primitives. The third layer is worker execution, where a fixed set of worker threads process connections independently.
+
+At a high level, the server workflow is as follows:
+
+1. The server creates a listening socket and binds it to port 2000.
+2. A fixed number of worker threads are created when the server starts.
+3. The main thread accepts each new client connection.
+4. The accepted socket is inserted into the shared work queue.
+5. A worker thread removes the socket from the queue.
+6. The worker initializes per-client state such as nickname, room, and authentication status.
+7. The worker reads input line by line from the client.
+8. The worker determines whether the line is a command or a plain chat message.
+9. The server executes the command or broadcasts the message as needed.
+10. When the client disconnects, the worker cleans up the session and returns to the queue for another client.
+
+This method keeps the server responsive while also preserving a simple overall structure. The queue acts as a buffer between connection bursts and worker availability. If more clients connect than there are free worker slots, the bounded queue prevents uncontrolled resource growth and gives the system backpressure.
+
+Client and room state are managed separately. Clients are stored in a shared list so the server can route public or private messages. Rooms are stored in another shared list, and each room keeps its own circular buffer of recent messages. This separation is useful because it allows room-specific updates to happen without interfering with other rooms.
+
+Synchronization is one of the most important design elements in the methodology. Because the main thread and worker threads touch shared state, locks are required to avoid corruption. Semaphores are used to coordinate the work queue, while mutexes protect the client list, room list, and room histories. The overall goal is to allow parallelism without race conditions.
+
+The server also includes functional features for user interaction. Commands such as `/nick`, `/join`, `/msg`, `/rooms`, `/users`, `/auth`, `/help`, and `/quit` give the system structure and make it usable as a multi-user chat environment. Normal text without a leading slash is treated as a message to the current room. A rate-limiting rule also prevents one user from flooding the server with too many plain text messages in a short time.
+
+Results
+
+The implemented system demonstrates the expected behavior of a threaded chat server. It accepts multiple simultaneous clients, routes messages to the correct room, supports private messaging, and maintains room history in memory and on disk. The server remains active while clients connect and disconnect, which confirms that work is distributed across the thread pool rather than serialized through a single blocking session handler.
+
+Observed functional results include the following:
+
+- Multiple clients can connect at the same time without stopping the server.
+- Users can change nickname and move between rooms during a session.
+- Room history is preserved in text files and restored when a room is used again.
+- Private messages are delivered directly to the intended recipient.
+- The rate limiter prevents excessive plain-text flooding.
+- Authentication support can be enabled through a token if the server is configured to require it.
+- The client interface can send and receive UTF-8 text.
+
+From a software-engineering perspective, the most important result is that the project successfully combines networking, concurrency, synchronization, and persistence in one working application. The thread-pool model prevents the server from waiting on one client while other clients are active. The room-based message storage ensures that communication remains organized and recoverable after a restart.
+
+Because the repository does not include measured benchmark logs or performance-test output, no numeric graph is included here. If you later run tests such as connection-throughput measurement, response-time sampling, or latency comparison between one-thread-per-client and thread-pool execution, a graph can be inserted into this section. A useful figure would compare average response time against number of concurrent clients. Another useful graph would show queue occupancy or worker utilization under load. In the absence of measured data, the current result section is intentionally qualitative and based on implemented behavior rather than fabricated numbers.
+
+Qualitative assessment of the design shows that the thread-pool approach is appropriate for the project size. It simplifies management compared with unbounded thread creation and provides a clear model for synchronization. The persistent room files also improve usability because users can return to historical conversations. The main limitations are those expected of a course-level chat system: plaintext transport, no end-to-end encryption, and modest message history size per room.
+
+Conclusion
+
+This project successfully delivers a multithreaded chat server using a thread-pool design in C. The system meets its main goals by supporting concurrent client sessions, room-based communication, private messaging, token-based authentication support, rate limiting, and persistent room history. The implementation demonstrates how operating-systems concepts can be applied directly to a useful network application.
+
+The most valuable lesson from the project is the importance of synchronization in concurrent programs. Once multiple worker threads share client lists, room lists, and room histories, careful use of mutexes and semaphores becomes necessary to keep the system stable. The project also shows why a thread pool is often preferred over a naive one-thread-per-client design: it gives better control over resources and makes the server behavior more predictable.
+
+In future work, the project could be extended with stronger authentication, encrypted transport, richer client-side interfaces, better logging, and automated performance testing. Additional improvements could include message search, file attachments, read receipts, and persistent user profiles. Even without those extensions, the current version provides a complete demonstration of concurrent socket programming, structured communication, and persistent room-based messaging.
+
+Build and Run Reference
+
+Build the project with:
+
+make all
+
+Start the server with:
+
+./server
+
+Connect a client with:
+
+./interactive_client localhost 2000 YourName

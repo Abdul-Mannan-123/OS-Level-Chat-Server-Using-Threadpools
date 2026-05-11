@@ -1,0 +1,55 @@
+[2026-05-09 19:17:38] Server listening on port 2000
+[2026-05-09 19:18:30] Server listening on port 2000
+[2026-05-09 19:23:45] Server listening on port 2000
+[2026-05-09 19:24:02] Server listening on port 2000
+[2026-05-09 19:24:03] client connected fd=5
+[2026-05-09 19:24:03] nickname set fd=5 name=test
+[2026-05-09 19:24:46] Server listening on port 2000
+[2026-05-09 19:29:48] Server listening on port 2000
+[2026-05-09 19:31:45] Server listening on port 2000
+[2026-05-09 19:31:46] client connected fd=5
+[2026-05-09 19:31:46] nickname set fd=5 name=test
+[2026-05-09 19:31:50] client disconnected fd=5
+[2026-05-09 19:31:57] Server listening on port 2000
+[2026-05-09 19:32:29] Server listening on port 2000
+[2026-05-09 19:46:49] Server listening on port 2000
+[2026-05-09 19:46:50] client connected fd=5
+[2026-05-09 19:46:50] nickname set fd=5 name=Alice
+[2026-05-09 19:46:51] client disconnected fd=5
+[2026-05-09 19:47:31] Server listening on port 2000
+[2026-05-09 19:47:32] client connected fd=6
+[2026-05-09 19:47:32] nickname set fd=6 name=TestUser
+[2026-05-09 19:47:32] client disconnected fd=6
+[2026-05-09 19:47:32] client connected fd=5
+[2026-05-09 19:47:32] nickname set fd=5 name=Alice
+[2026-05-09 19:47:32] message room=lobby user=Alice text=Hello
+[2026-05-09 19:47:33] client connected fd=6
+[2026-05-09 19:47:33] nickname set fd=6 name=Bob
+[2026-05-09 19:47:33] message room=lobby user=Bob text=Hi Alice
+[2026-05-09 19:48:05] Server listening on port 2000
+[2026-05-09 19:52:28] Server listening on port 2000
+[2026-05-09 19:55:42] client connected fd=5
+[2026-05-09 19:55:52] Server listening on port 2000
+[2026-05-09 19:55:53] client connected fd=5
+[2026-05-09 19:56:35] Server listening on port 2000
+[2026-05-09 19:56:39] client connected fd=5
+[2026-05-09 19:56:39] nickname set fd=5 name=abdul
+[2026-05-09 19:57:04] client disconnected fd=5
+[2026-05-09 21:08:04] Server listening on port 2000
+[2026-05-09 21:09:03] client connected fd=5
+[2026-05-09 21:09:03] nickname set fd=5 name=abdulmannan
+[2026-05-09 21:09:17] message room=lobby user=abdulmannan text=hello there
+[2026-05-09 21:11:05] client connected fd=6
+[2026-05-09 21:11:09] client disconnected fd=6
+[2026-05-09 21:11:15] client connected fd=7
+[2026-05-09 21:11:15] nickname set fd=7 name=abdul
+[2026-05-09 21:12:12] pm from=abdulmannan to=abdul message=salam
+[2026-05-09 21:13:20] client connected fd=6
+[2026-05-09 21:13:20] nickname set fd=6 name=mannan
+[2026-05-09 21:13:22] message room=lobby user=mannan text=hi
+[2026-05-09 21:13:59] message room=lobby user=abdul text=join new room
+[2026-05-09 21:15:02] message room=lobby user=abdul text=na
+[2026-05-09 21:15:23] room change fd=6 user=mannan to=room
+[2026-05-09 21:15:45] room change fd=5 user=abdulmannan to=room
+[2026-05-09 21:16:32] message room=room user=mannan text=hey dont tell abdul
+[2026-05-09 21:17:12] pm from=abdul to=mannan message=dont tell abdul mannan

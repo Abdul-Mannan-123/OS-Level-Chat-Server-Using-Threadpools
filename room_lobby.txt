@@ -1,0 +1,6 @@
+[lobby][Alice] Hello
+[lobby][Bob] Hi Alice
+[lobby][abdulmannan] hello there
+[lobby][mannan] hi
+[lobby][abdul] join new room
+[lobby][abdul] na
