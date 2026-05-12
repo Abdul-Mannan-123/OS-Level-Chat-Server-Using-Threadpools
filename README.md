@@ -1,88 +1,47 @@
+![chat-banner](https://dummyimage.com/1200x280/1e293b/ffffff&text=OS-Level+Chat+Server+Using+Thread+Pools)
+
+![Language Badge](https://img.shields.io/badge/Language-C-00599C?style=for-the-badge&logo=c)
+![Threads Badge](https://img.shields.io/badge/Threads-POSIX_Pthreads-orange?style=for-the-badge)
+![Networking Badge](https://img.shields.io/badge/Networking-TCP_Sockets-green?style=for-the-badge)
+![Synchronization Badge](https://img.shields.io/badge/Synchronization-Mutexes_%26_Semaphores-red?style=for-the-badge)
+![Architecture Badge](https://img.shields.io/badge/Architecture-Thread_Pool-blueviolet?style=for-the-badge)
+
 # OS-Level Chat Server Using Thread Pools
 
-<div align="center">
+## DESCRIPTION:
+A multithreaded TCP chat server implemented in C using POSIX threads and socket programming.
 
-![C](https://img.shields.io/badge/Language-C-blue?style=flat-square&logo=c)
-![Threads](https://img.shields.io/badge/Pthreads-Thread%20Pool-orange?style=flat-square)
-![Sockets](https://img.shields.io/badge/TCP-Sockets-green?style=flat-square)
-![OS](https://img.shields.io/badge/Operating%20Systems-Project-red?style=flat-square)
-
-A multithreaded TCP chat server written in C using POSIX threads, sockets, semaphores, mutexes, and file persistence.
-
-</div>
+The project combines several core Operating Systems concepts including thread pools, synchronization, producer-consumer queues, circular buffers, and file persistence into one complete real-time chat system.
 
 ---
 
-## Overview
-
-This project is a multithreaded socket-based chat server built in C.  
-The server uses a fixed-size worker thread pool to efficiently handle multiple TCP client connections concurrently.
-
-The system supports:
-
-- Room-based public chat
-- Private messaging
-- Thread-pool concurrency
-- File-based message persistence
-- Authentication
-- Rate limiting
-- Server logging
-
-The project combines several core Operating Systems concepts into one complete working system.
-
----
-
-## Features
-
-- Fixed thread pool with 4 worker threads
-- Concurrent TCP client handling
+## FEATURES:
+- Fixed worker thread pool
+- Concurrent multi-client support
 - Room-based public chat
 - Private messaging with `/msg`
-- Nickname changes with `/nick`
+- Nickname changing with `/nick`
 - Room switching with `/join`
-- Room and user listings
-- Optional token-based authentication
+- Active room and user listings
+- Token-based authentication
 - Per-client rate limiting
 - Persistent room history
 - Server-side logging
 
 ---
 
-## Operating Systems Concepts Used
-
-| Concept | Usage |
-|---|---|
-| TCP Socket Programming | Client-server communication |
-| POSIX Threads | Concurrent client handling |
-| Mutexes & Semaphores | Synchronization |
-| Producer-Consumer Queue | Worker task scheduling |
-| Circular Buffers | Room history storage |
-| File Persistence | Saved room chats |
+## TECH STACK:
+- C
+- POSIX Threads (pthreads)
+- TCP Socket Programming
+- Mutexes & Semaphores
+- Producer-Consumer Queue
+- Circular Buffer
+- File I/O
 
 ---
 
-## Repository Structure
-
-```text
-os-chat-server/
-│
-├── server.c
-├── interactive_client.c
-├── data_structs.c
-├── data_structs.h
-├── socket_utils.c
-├── socket_utils.h
-├── Makefile
-├── PROJECT_REPORT.txt
-├── chat_server.log
-└── room_<name>.txt
-```
-
----
-
-## Build
-
-Compile the project using:
+## BUILD:
 
 ```bash
 make all
@@ -103,7 +62,7 @@ make clean
 
 ---
 
-## Running the Project
+## RUN:
 
 Start the server:
 
@@ -111,36 +70,22 @@ Start the server:
 ./server
 ```
 
-The server listens on port:
-
-```text
-2000
-```
-
-Connect clients:
+Connect client:
 
 ```bash
 ./interactive_client localhost 2000 Alice
 ```
 
-Example:
-
-```bash
-./interactive_client localhost 2000 Abdul
-```
-
 ---
 
-## Optional Authentication
-
-Enable authentication using an environment variable:
+## OPTIONAL AUTHENTICATION:
 
 ```bash
 export CHAT_SERVER_TOKEN="your-token"
 ./server
 ```
 
-Authenticate from client:
+Client authentication:
 
 ```bash
 /auth your-token
@@ -148,24 +93,22 @@ Authenticate from client:
 
 ---
 
-## Client Commands
+## CLIENT COMMANDS:
 
 | Command | Description |
 |---|---|
 | `/auth <token>` | Authenticate with server |
 | `/nick <name>` | Change nickname |
-| `/join <room>` | Switch rooms |
-| `/msg <user> <text>` | Send private message |
-| `/users` | Show users in room |
+| `/join <room>` | Switch room |
+| `/msg <user> <text>` | Private message |
+| `/users` | Show room users |
 | `/rooms` | List active rooms |
 | `/help` | Show commands |
 | `/quit` | Disconnect |
 
-Any line not starting with `/` is treated as a public room message.
-
 ---
 
-## Thread Pool Architecture
+## THREAD POOL ARCHITECTURE:
 
 ```text
                 +------------------+
@@ -194,28 +137,28 @@ Any line not starting with `/` is treated as a public room message.
 
 ---
 
-## How It Works
+## HOW IT WORKS:
 
-1. The server creates a listening TCP socket.
-2. Four worker threads are created at startup.
-3. The main thread accepts incoming client sockets.
-4. Accepted sockets are inserted into a bounded queue.
-5. Worker threads dequeue sockets and process clients.
-6. Commands are parsed and executed.
-7. Public messages are broadcast to room members.
-8. Private messages are routed directly to recipients.
-9. Room history is stored in memory and on disk.
+1. Server creates a listening TCP socket
+2. Worker threads initialize at startup
+3. Main thread accepts client connections
+4. Client sockets enter bounded queue
+5. Worker threads process client sessions
+6. Messages are routed by room
+7. Private messages are sent directly
+8. Room history is stored in memory and on disk
 
 ---
 
-## Message Persistence
+## MESSAGE PERSISTENCE:
 
-Each room maintains:
+Messages are saved in:
 
-- In-memory circular message history
-- Persistent room log files
+```text
+room_<name>.txt
+```
 
-Stored message format:
+Format:
 
 ```text
 [roomname][username] message text
@@ -228,133 +171,44 @@ Example:
 [gaming][Abdul] Hi Alice
 ```
 
-Room history is automatically reloaded after server restart.
-
 ---
 
-## Logging
+## LOGGING:
 
-Server activity is written to:
+Server logs are stored in:
 
 ```text
 chat_server.log
 ```
 
-Logs include:
-
-- Client connections
+Includes:
+- Connections
 - Disconnects
 - Authentication events
 - Errors
-- General server activity
+- Server activity
 
 ---
 
-## Example Session
+## OPERATING SYSTEMS CONCEPTS USED:
 
-### Terminal 1
-
-```bash
-./server
-```
-
-### Terminal 2
-
-```bash
-./interactive_client localhost 2000 Alice
-
-/join gaming
-Hello from gaming!
-```
-
-### Terminal 3
-
-```bash
-./interactive_client localhost 2000 Abdul
-
-/join gaming
-Hi Alice
-```
-
----
-
-## Implementation Notes
-
-### Thread Pool Design
-
-Instead of creating one thread per client, the server uses:
-
-```text
-Fixed Worker Pool + Shared Queue
-```
-
-Benefits:
-
-- Lower thread creation overhead
-- Better scalability
-- Controlled resource usage
-- Improved responsiveness
-
----
-
-### Synchronization
-
-Shared resources are protected using:
-
-- `pthread_mutex_t`
-- POSIX semaphores
-
-Used for:
-
-- Queue synchronization
-- Room management
-- Shared client data
-- Message history protection
-
----
-
-## Technologies Used
-
-| Technology | Purpose |
+| Concept | Usage |
 |---|---|
-| C | Core implementation |
-| POSIX Threads | Multithreading |
-| TCP Sockets | Networking |
-| Mutexes | Synchronization |
-| Semaphores | Producer-consumer control |
-| File I/O | Persistence |
+| TCP Sockets | Client-server communication |
+| POSIX Threads | Concurrent execution |
+| Mutexes | Shared resource protection |
+| Semaphores | Queue synchronization |
+| Producer-Consumer | Task scheduling |
+| Circular Buffers | Room history |
+| File Persistence | Saved chats |
 
 ---
 
-## Learning Outcomes
-
-This project demonstrates practical understanding of:
-
-- Operating Systems
-- Concurrent programming
-- Networking fundamentals
-- Synchronization
-- Thread-pool architecture
-- Producer-consumer systems
-- Socket communication
-- Persistent server design
-
----
-
-## Future Improvements
-
+## FUTURE IMPROVEMENTS:
 - GUI client
 - Encrypted communication
-- Database-backed persistence
+- Database persistence
 - WebSocket support
 - Admin moderation tools
 - File sharing
 - Notifications
-
----
-
-<div align="center">
-
-Built using C, POSIX Threads, and TCP Sockets.
-
-</div>
