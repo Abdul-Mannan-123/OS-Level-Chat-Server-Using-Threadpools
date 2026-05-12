@@ -1,148 +1,360 @@
 # OS-Level Chat Server Using Thread Pools
 
-## Project Overview
+<div align="center">
 
-This project is a multithreaded, socket-based chat server written in C. It uses a fixed worker-pool design to accept multiple TCP client connections, route messages by chat room, and support private messaging between users. The server keeps recent room history in memory and persists chat logs to disk so room conversations remain available across restarts.
+![C](https://img.shields.io/badge/Language-C-blue?style=flat-square&logo=c)
+![Threads](https://img.shields.io/badge/Pthreads-Thread%20Pool-orange?style=flat-square)
+![Sockets](https://img.shields.io/badge/TCP-Sockets-green?style=flat-square)
+![OS](https://img.shields.io/badge/Operating%20Systems-Project-red?style=flat-square)
 
-The project combines several operating-systems concepts in one working system:
+A multithreaded TCP chat server written in C using POSIX threads, sockets, semaphores, mutexes, and file persistence.
 
-- TCP socket programming
-- POSIX threads
-- mutexes and semaphores for synchronization
-- bounded producer-consumer task handling
-- circular buffers for room history
-- file-based persistence for room messages
+</div>
+
+---
+
+## Overview
+
+This project is a multithreaded socket-based chat server built in C.  
+The server uses a fixed-size worker thread pool to efficiently handle multiple TCP client connections concurrently.
+
+The system supports:
+
+- Room-based public chat
+- Private messaging
+- Thread-pool concurrency
+- File-based message persistence
+- Authentication
+- Rate limiting
+- Server logging
+
+The project combines several core Operating Systems concepts into one complete working system.
+
+---
 
 ## Features
 
-- Fixed server-side thread pool with 4 workers
-- Concurrent client connection handling
+- Fixed thread pool with 4 worker threads
+- Concurrent TCP client handling
 - Room-based public chat
 - Private messaging with `/msg`
 - Nickname changes with `/nick`
 - Room switching with `/join`
-- Active room and user listings with `/rooms` and `/users`
-- Optional token-based authentication through `CHAT_SERVER_TOKEN`
-- Per-client rate limiting for plain chat messages
-- Persistent room history in `room_<name>.txt` files
-- Server logging to `chat_server.log`
+- Room and user listings
+- Optional token-based authentication
+- Per-client rate limiting
+- Persistent room history
+- Server-side logging
+
+---
+
+## Operating Systems Concepts Used
+
+| Concept | Usage |
+|---|---|
+| TCP Socket Programming | Client-server communication |
+| POSIX Threads | Concurrent client handling |
+| Mutexes & Semaphores | Synchronization |
+| Producer-Consumer Queue | Worker task scheduling |
+| Circular Buffers | Room history storage |
+| File Persistence | Saved room chats |
+
+---
+
+## Repository Structure
+
+```text
+os-chat-server/
+│
+├── server.c
+├── interactive_client.c
+├── data_structs.c
+├── data_structs.h
+├── socket_utils.c
+├── socket_utils.h
+├── Makefile
+├── PROJECT_REPORT.txt
+├── chat_server.log
+└── room_<name>.txt
+```
+
+---
 
 ## Build
 
-Use the provided Makefile:
+Compile the project using:
 
 ```bash
 make all
 ```
 
-This builds:
+Generated binaries:
 
-- `server`
-- `interactive_client`
+```text
+server
+interactive_client
+```
 
-To clean build outputs:
+Clean build files:
 
 ```bash
 make clean
 ```
 
-## Run
+---
 
-Start the server first:
+## Running the Project
+
+Start the server:
 
 ```bash
 ./server
 ```
 
-Open one or more client terminals and connect with a nickname:
+The server listens on port:
 
-```bash
-./interactive_client localhost 2000 YourName
+```text
+2000
 ```
 
-The server listens on port `2000` by default.
+Connect clients:
 
-If authentication is enabled on the server, set the token before starting it:
+```bash
+./interactive_client localhost 2000 Alice
+```
+
+Example:
+
+```bash
+./interactive_client localhost 2000 Abdul
+```
+
+---
+
+## Optional Authentication
+
+Enable authentication using an environment variable:
 
 ```bash
 export CHAT_SERVER_TOKEN="your-token"
 ./server
 ```
 
+Authenticate from client:
+
+```bash
+/auth your-token
+```
+
+---
+
 ## Client Commands
 
-- `/auth <token>` authenticate with the server when a token is required
-- `/nick <name>` change your display name
-- `/join <room>` switch to a room and load its history
-- `/msg <user> <text>` send a private message
-- `/users` list users in the current room
-- `/rooms` list active rooms
-- `/help` show available commands
-- `/quit` disconnect cleanly
+| Command | Description |
+|---|---|
+| `/auth <token>` | Authenticate with server |
+| `/nick <name>` | Change nickname |
+| `/join <room>` | Switch rooms |
+| `/msg <user> <text>` | Send private message |
+| `/users` | Show users in room |
+| `/rooms` | List active rooms |
+| `/help` | Show commands |
+| `/quit` | Disconnect |
 
-Any line that does not start with `/` is treated as a public chat message for the current room.
+Any line not starting with `/` is treated as a public room message.
 
-## Repository Layout
+---
 
-- `server.c`: main server logic, thread pool, room routing, rate limiting, authentication, and logging
-- `interactive_client.c`: terminal client used to connect and chat
-- `data_structs.c` and `data_structs.h`: queue and supporting data structures
-- `socket_utils.c` and `socket_utils.h`: socket helper functions
-- `Makefile`: build instructions
-- `PROJECT_REPORT.txt`: project report
+## Thread Pool Architecture
+
+```text
+                +------------------+
+                |   Main Thread    |
+                | Accept Clients   |
+                +--------+---------+
+                         |
+                         v
+               +-------------------+
+               |   Bounded Queue   |
+               | Producer/Consumer |
+               +---------+---------+
+                         |
+        +----------------+----------------+
+        |                |                |
+        v                v                v
+   +---------+     +---------+     +---------+
+   |Worker 1 |     |Worker 2 |     |Worker 3 |
+   +---------+     +---------+     +---------+
+                         |
+                         v
+                    +---------+
+                    |Worker 4 |
+                    +---------+
+```
+
+---
 
 ## How It Works
 
 1. The server creates a listening TCP socket.
 2. Four worker threads are created at startup.
 3. The main thread accepts incoming client sockets.
-4. Accepted sockets are placed into a bounded queue.
-5. Worker threads dequeue sockets and process each client session.
-6. Commands are parsed and handled immediately.
-7. Public messages are broadcast to everyone in the same room.
-8. Private messages are delivered directly to the named recipient.
-9. Room history is stored in memory and appended to disk.
+4. Accepted sockets are inserted into a bounded queue.
+5. Worker threads dequeue sockets and process clients.
+6. Commands are parsed and executed.
+7. Public messages are broadcast to room members.
+8. Private messages are routed directly to recipients.
+9. Room history is stored in memory and on disk.
 
-The design keeps the server responsive while multiple clients are active at the same time.
+---
 
-## Message History and Persistence
+## Message Persistence
 
-Each room maintains a recent history in memory using a circular buffer. When a room message is added, it is also appended to the matching disk file using the format:
+Each room maintains:
+
+- In-memory circular message history
+- Persistent room log files
+
+Stored message format:
 
 ```text
 [roomname][username] message text
 ```
 
-When a room is opened again, its saved history is loaded back into memory so new users can see previous messages.
+Example:
+
+```text
+[gaming][Alice] Hello everyone
+[gaming][Abdul] Hi Alice
+```
+
+Room history is automatically reloaded after server restart.
+
+---
+
+## Logging
+
+Server activity is written to:
+
+```text
+chat_server.log
+```
+
+Logs include:
+
+- Client connections
+- Disconnects
+- Authentication events
+- Errors
+- General server activity
+
+---
 
 ## Example Session
 
-Terminal 1:
+### Terminal 1
 
 ```bash
 ./server
 ```
 
-Terminal 2:
+### Terminal 2
 
 ```bash
 ./interactive_client localhost 2000 Alice
+
 /join gaming
 Hello from gaming!
 ```
 
-Terminal 3:
+### Terminal 3
 
 ```bash
 ./interactive_client localhost 2000 Abdul
+
 /join gaming
-Hi Bazil
+Hi Alice
 ```
+
+---
 
 ## Implementation Notes
 
-- The server uses a fixed thread pool instead of creating a new thread for every connection.
-- Shared data structures are protected with mutexes and semaphores.
-- The client is terminal-based and reads/writes plain text over TCP.
-- Room files and the server log are stored in the project directory.
+### Thread Pool Design
 
+Instead of creating one thread per client, the server uses:
+
+```text
+Fixed Worker Pool + Shared Queue
+```
+
+Benefits:
+
+- Lower thread creation overhead
+- Better scalability
+- Controlled resource usage
+- Improved responsiveness
+
+---
+
+### Synchronization
+
+Shared resources are protected using:
+
+- `pthread_mutex_t`
+- POSIX semaphores
+
+Used for:
+
+- Queue synchronization
+- Room management
+- Shared client data
+- Message history protection
+
+---
+
+## Technologies Used
+
+| Technology | Purpose |
+|---|---|
+| C | Core implementation |
+| POSIX Threads | Multithreading |
+| TCP Sockets | Networking |
+| Mutexes | Synchronization |
+| Semaphores | Producer-consumer control |
+| File I/O | Persistence |
+
+---
+
+## Learning Outcomes
+
+This project demonstrates practical understanding of:
+
+- Operating Systems
+- Concurrent programming
+- Networking fundamentals
+- Synchronization
+- Thread-pool architecture
+- Producer-consumer systems
+- Socket communication
+- Persistent server design
+
+---
+
+## Future Improvements
+
+- GUI client
+- Encrypted communication
+- Database-backed persistence
+- WebSocket support
+- Admin moderation tools
+- File sharing
+- Notifications
+
+---
+
+<div align="center">
+
+Built using C, POSIX Threads, and TCP Sockets.
+
+</div>
